@@ -8,7 +8,7 @@ with open('token') as f:
     TOKEN = f.read()
 bot = interactions.Client(token=TOKEN)
 WORDS = []
-for i in open('../wordles.txt'):
+for i in open('../resources/wordles.txt'):
     WORDS.append(i.replace('\n', ''))
 wordle = WORDS[random.randint(0, len(WORDS))]
 valid_chr = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
