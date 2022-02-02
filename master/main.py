@@ -1,7 +1,5 @@
 import random
 import interactions
-import sqlite3
-
 # Wordle!
 SCOPES = '749015533310967828'
 with open('token') as f:
@@ -71,11 +69,6 @@ def wnc(inp):
 @bot.event
 async def on_ready():
     print("Online!")
-    r = await bot.http.get_self()
-    s = await bot.http.get_current_bot_information()
-    m = await bot.http.get_user(user_id=452954731162238987)
-
-    print(r, '\n', s, '\n', m)
 
 
 @bot.command(name='test', description='Sends a test command', scope=SCOPES)
@@ -91,6 +84,8 @@ async def start(ctx: interactions.CommandContext):
     r: dict = await bot.http.create_thread(channel_id=int(ctx.channel_id), thread_type=11,
                                             name=f'Wordle {today} - {ctx.author.user.username};{ctx.author.user.discriminator}')
     await ctx.send(f'Wordle thread created at <#{r["id"]}>')
+    r = await bot.http.get_guild(ctx.guild_id)
+    print(r['icon'])
 
 
 @bot.command(name='submit', description='Submit a wordle guess', scope=SCOPES, options=[interactions.Option(
@@ -102,7 +97,7 @@ async def submit(ctx: interactions.CommandContext, guess):
     if len(player_current) != 0:
         if wnc(player_current[-1]):
             return await ctx.send('You already won, no need to try again.', ephemeral=True)
-    if guess not in WORDLEST:
+    if guess not in WORDS:
         return await ctx.send('Word not in word list.')
     if len(player_current) >= 6:
         return await ctx.send(f'Max. number of tries reached. The word was ||{wordle}||', ephemeral=True)
