@@ -114,4 +114,4 @@ dmypy.json
 .pyre/
 master/DataB.py
 master/l.py
-master/token
+resources/token

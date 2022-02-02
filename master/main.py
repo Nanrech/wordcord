@@ -2,7 +2,7 @@ import random
 import interactions
 # Wordle!
 SCOPES = '749015533310967828'
-with open('token') as f:
+with open('../resources/token') as f:
     TOKEN = f.read()
 bot = interactions.Client(token=TOKEN)
 WORDS = []
