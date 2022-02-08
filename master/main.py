@@ -1,36 +1,37 @@
 import random
 import interactions
+
 # Wordle!
 SCOPES = '749015533310967828'
 with open('../resources/token') as f:
     TOKEN = f.read()
 bot = interactions.Client(token=TOKEN)
 WORDS = []
-for i in open('../resources/wordles.txt'):
+for i in open('../resources/types/wordles.txt'):
     WORDS.append(i.replace('\n', ''))
-wordle = WORDS[random.randint(0, len(WORDS))]
 valid_chr = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
              'v', 'w', 'x', 'y', 'z']
+wordle = WORDS[random.randint(0, len(WORDS))]
 player_current: list = []
 player_guesses: list = []
 today = '1'
 
 
 def gss(guess):
-    i = 0
+    n = 0
     load = []
     for x in guess.lower():
-        if x == wordle[i]:
+        if x == wordle[n]:
             load.append('🟩')
-            i += 1
+            n += 1
             continue
-        elif x in wordle and x != wordle[i]:
+        elif x in wordle and x != wordle[n]:
             load.append('🟨')
-            i += 1
+            n += 1
             continue
         else:
             load.append('⬛')
-            i += 1
+            n += 1
             continue
     return ''.join(load)
 
@@ -49,8 +50,8 @@ def aeq(inp):
 def err(inp):
     if len(inp) != 5:
         return False
-    for i in inp:
-        if i not in valid_chr:
+    for ch in inp:
+        if ch not in valid_chr:
             return False
         else:
             continue
@@ -82,7 +83,7 @@ async def emb(ctx: interactions.CommandContext):
 async def start(ctx: interactions.CommandContext):
     print(dir(ctx.author))
     r: dict = await bot.http.create_thread(channel_id=int(ctx.channel_id), thread_type=11,
-                                            name=f'Wordle {today} - {ctx.author.user.username};{ctx.author.user.discriminator}')
+                                           name=f'Wordle {today} - {ctx.author.user.username};{ctx.author.user.discriminator}')
     await ctx.send(f'Wordle thread created at <#{r["id"]}>')
     r = await bot.http.get_guild(ctx.guild_id)
     print(r['icon'])

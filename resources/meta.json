@@ -1,0 +1,47 @@
+{
+  "today": 0,
+  "wordle": "wrong",
+  "modes": [
+    "Worlde",
+    "Letterle",
+    "Wordle_ES",
+    "Endless"
+  ],
+  "amount": 5,
+  "types": {
+    "Wordle": {
+      "length": 5,
+      "validchr": [],
+      "tries": 6
+    },
+    "Wordle": {
+      "length": 5,
+      "validchr": [],
+      "tries": 6,
+      "description": "Vanilla Wordle, using answers ripped straight from the source"
+    },
+    "Wordcord": {
+      "length": 5,
+      "validchr": [],
+      "tries": 6,
+      "description": "Same as vanilla Wordle, but using a different list of words to avoid any spoilers"
+    },
+    "Letterle": {
+      "length": 1,
+      "validchr": [],
+      "tries": 26,
+      "description": "Like Wordle, but you have to guess a single letter in 26 tries"
+    },
+    "ES": {
+      "length": 5,
+      "validchr": [],
+      "tries": 6,
+      "description": "Como el Wordle original pero en español"
+    },
+    "Endless": {
+      "length": 5,
+      "validchr": [],
+      "tries": -1
+    }
+  }
+}
