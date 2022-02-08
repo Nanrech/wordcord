@@ -1,5 +1,6 @@
 import random
 import interactions
+import json
 
 # Wordle!
 SCOPES = '749015533310967828'
@@ -47,6 +48,29 @@ def aeq(inp):
     return True
 
 
+def profiler(us):
+    dat: dict = {f'{us}': {
+        "streak": 3,
+        "mode": "Wordle",
+        "beaten": False,
+        "tries": [],
+        "guesses": []
+    }}
+    return dat
+
+
+'''
+{
+  "2": {
+    "mode": "Wordle",
+    "tries": [],
+    "guesses": [],
+    "streak": 5,
+    "beaten": false
+  }
+}'''
+
+
 def err(inp):
     if len(inp) != 5:
         return False
@@ -72,6 +96,14 @@ async def on_ready():
     print("Online!")
 
 
+@bot.command(name='dump', description='dumps', scope=SCOPES, options=[interactions.Option(
+    name='user', description='User you want to dump', type=interactions.OptionType.STRING, required=True)])
+async def dump(ctx: interactions.CommandContext, user):
+    with open('../resources/users.json', 'r') as d:
+        data = json.load(d)
+    await ctx.send(str(dict(data[user])))
+
+
 @bot.command(name='test', description='Sends a test command', scope=SCOPES)
 async def emb(ctx: interactions.CommandContext):
     await ctx.send(embeds=interactions.Embed(title="**Wordle!**",
@@ -79,19 +111,25 @@ async def emb(ctx: interactions.CommandContext):
                                              color=0x56AB91))
 
 
-@bot.command(name='start', description='Starts a thread so you can play wordle in private', scope=SCOPES)
+@bot.command(name='start', description='Creates a user profile so your progress and stats can be saved. It is '
+                                       'required to play the game!', scope=SCOPES)
 async def start(ctx: interactions.CommandContext):
-    print(dir(ctx.author))
-    r: dict = await bot.http.create_thread(channel_id=int(ctx.channel_id), thread_type=11,
-                                           name=f'Wordle {today} - {ctx.author.user.username};{ctx.author.user.discriminator}')
-    await ctx.send(f'Wordle thread created at <#{r["id"]}>')
-    r = await bot.http.get_guild(ctx.guild_id)
-    print(r['icon'])
+    with open('../resources/users.json', 'r+') as m:
+        data = json.load(m)
+        if str(ctx.author.user.id) in data:
+            return await ctx.send('User profile already exists!')
+    data.update(profiler(ctx.author.user.id))
+    with open('../resources/users.json', 'w') as fm:
+        json.dump(data, fm)
+    await ctx.send('w')
 
 
 @bot.command(name='submit', description='Submit a wordle guess', scope=SCOPES, options=[interactions.Option(
     name='guess', description='A string containing your guess', type=interactions.OptionType.STRING, required=True)])
 async def submit(ctx: interactions.CommandContext, guess):
+    with open('../resources/users.json') as k:
+        if ctx.author.user.id not in k:
+            await ctx.send('Run /start ')
     if not err(guess):
         return await ctx.send('Invalid input. Guesses must be 5 letter long words containing characters only from a '
                               'to z.')
