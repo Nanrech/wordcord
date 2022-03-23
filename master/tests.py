@@ -1,12 +1,13 @@
 import json, os
+from os.path import exists
 
 wordle = 'craft'
 
 
-def gss(guess):
+def gss(gues):
     n = 0
     load = []
-    for x in guess.lower():
+    for x in gues.lower():
         if x == wordle[n]:
             load.append('🟩')
             n += 1
@@ -23,26 +24,21 @@ def gss(guess):
 
 
 def prf_exists(user: str):
-    try:
-        with open(f"./users/{user}.json", "x") as yu:
-            with open(f"./users/{user}.json", "r") as uy:
-                try:
-                    yy = json.load(uy)
-                except:
-                    yy: dict = {}
-            yy["tries"] = []
-            yy["guesses"] = []
-            yy["streak"] = 0
-            yy["beaten"] = False
-            with open(f"./users/{user}.json", "w") as uu:
-                print(json.load(uu), yy)
-                json.dump(yy, uu)
-
-    except FileExistsError:
+    if exists(f"./users/{user}.json") and os.stat(f"./users/{user}.json").st_size != 0:
+        return
+    else:
+        try:
+            with open(f"./users/{user}.json", "x") as _:
+                pass
+        except FileExistsError:
+            pass
+        with open(f"./users/{user}.json", "w") as f:
+            sample = {"tries": "", "guesses": "", "streak": 0, "beaten": False}
+            json.dump(sample, f)
         return
 
 
-def clear_prf(pid: str):
+def softclear_prf(pid: str):
     with open(f"./users/{pid}.json", "r") as g:
         yy = json.load(g)
     yy["guesses"] = ""
@@ -53,15 +49,17 @@ def clear_prf(pid: str):
 
 
 def post_tries(pid: str, tri: str):
+    prf_exists(pid)
     with open(f"./users/{pid}.json", "r") as g:
         d = json.load(g)
     with open(f"./users/{pid}.json", "w") as g:
-        d["tries"] = d["tries"] + tri
+        d["tries"] = d["tries"] + gss(tri)
         json.dump(d, g)
     return
 
 
 def post_guess(pid: str, gus: str):
+    prf_exists(pid)
     with open(f"./users/{pid}.json", "r") as g:
         d = json.load(g)
     with open(f"./users/{pid}.json", "w") as g:
@@ -75,7 +73,15 @@ def get_tries(pid: str):
         return str(dict(json.load(g))["tries"])
 
 
-guess = "craft"
-#clear_prf('76576576576')
-post_tries("76576576576", gss(guess))
-post_guess("76576576576", guess)
+guess = "cramp"
+#post_tries("765765765761", guess)
+#post_guess("765765765761", guess)
+with open(f"./users/765765765761.json", "r") as g:
+    d = json.load(g)
+
+c = 2
+for a in d["tries"]:
+    print(d["tries"][c])
+    c += 1
+    if c == 8:
+        break
