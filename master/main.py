@@ -1,16 +1,6 @@
 import random, os, json
 import interactions
 
-"""import sqlite3
-
-# DB stuff!
-conn = sqlite3.connect('../resources/userbase.db')
-c = conn.cursor()
-
-
-def create_table():
-    c.execute('CREATE TABLE IF NOT EXISTS stuffToPlot(unix)')"""
-
 # Wordle!
 SCOPES = '749015533310967828'  # Temp
 with open('../resources/token') as f:

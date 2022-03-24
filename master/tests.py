@@ -24,64 +24,66 @@ def gss(gues):
 
 
 def prf_exists(user: str):
-    if exists(f"./users/{user}.json") and os.stat(f"./users/{user}.json").st_size != 0:
+    pth = f"./users/{user}.json"
+    if exists(pth) and os.stat(pth).st_size != 0:
         return
     else:
         try:
-            with open(f"./users/{user}.json", "x") as _:
+            with open(pth, "x") as _:
                 pass
         except FileExistsError:
             pass
-        with open(f"./users/{user}.json", "w") as f:
+        with open(pth, "w") as f:
             sample = {"tries": "", "guesses": "", "streak": 0, "beaten": False}
             json.dump(sample, f)
         return
 
 
 def softclear_prf(pid: str):
-    with open(f"./users/{pid}.json", "r") as g:
+    pth = f"./users/{pid}.json"
+    with open(pth, "r") as g:
         yy = json.load(g)
     yy["guesses"] = ""
     yy["tries"] = ""
-    with open(f"./users/{pid}.json", "w") as g:
+    with open(pth, "w") as g:
         json.dump(yy, g)
     return
 
 
 def post_tries(pid: str, tri: str):
+    pth = f"./users/{pid}.json"
     prf_exists(pid)
-    with open(f"./users/{pid}.json", "r") as g:
+    with open(pth, "r") as g:
         d = json.load(g)
-    with open(f"./users/{pid}.json", "w") as g:
-        d["tries"] = d["tries"] + gss(tri)
+    with open(pth, "w") as g:
+        d["tries"] = d["tries"] + tri
         json.dump(d, g)
     return
 
 
 def post_guess(pid: str, gus: str):
+    pth = f"./users/{pid}.json"
     prf_exists(pid)
-    with open(f"./users/{pid}.json", "r") as g:
+    with open(pth, "r") as g:
         d = json.load(g)
-    with open(f"./users/{pid}.json", "w") as g:
+    with open(pth, "w") as g:
         d["guesses"] = d["guesses"] + gus
         json.dump(d, g)
     return
 
 
 def get_tries(pid: str):
-    with open(f"./users/{pid}.json", "r") as g:
+    pth = f"./users/{pid}.json"
+    with open(pth, "r") as g:
         return str(dict(json.load(g))["tries"])
 
 
 guess = "cramp"
-#post_tries("765765765761", guess)
-#post_guess("765765765761", guess)
-with open(f"./users/765765765761.json", "r") as g:
-    d = json.load(g)
-
-c = 2
-for a in d["tries"]:
-    print(d["tries"][c])
-    c += 1
-    if c == 8:
-        break
+prf_exists("765765765761")
+softclear_prf("765765765761")
+post_tries("765765765761", gss(guess))
+post_guess("765765765761", guess)
+with open("./users/765765765761.json", "r", encoding="utf-8") as f:
+    g: dict = json.load(f)
+print(g["tries"])
+print(gss("cramp"))
