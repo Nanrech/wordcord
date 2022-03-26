@@ -78,12 +78,13 @@ def get_tries(pid: str):
         return str(dict(json.load(g))["tries"])
 
 
-guess = "cramp"
+guess = "pears"
 prf_exists("765765765761")
 softclear_prf("765765765761")
 post_tries("765765765761", gss(guess))
 post_guess("765765765761", guess)
 with open("./users/765765765761.json", "r", encoding="utf-8") as f:
     g: dict = json.load(f)
-print(g["tries"])
+print(g["tries"][0:5])
+print(len(g["tries"]), int(len(g["tries"]) / 5))
 print(gss("cramp"))
