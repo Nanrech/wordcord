@@ -1,19 +1,19 @@
-import json, os
-from typing import Union
+import json
+import os
 from os.path import exists
+from typing import Union
+from wordle import wordle
 
-wordle = 'craft'
 
-
-def gss(gues):
+def gss(gues, wrdl):
     n = 0
     load = []
     for x in gues.lower():
-        if x == wordle[n]:
+        if x == wrdl[n]:
             load.append('🟩')
             n += 1
             continue
-        elif x in wordle and x != wordle[n]:
+        elif x in wrdl and x != wrdl[n]:
             load.append('🟨')
             n += 1
             continue
@@ -35,7 +35,7 @@ def prf_exists(user: str):
         except FileExistsError:
             pass
         with open(pth, "w") as f:
-            sample = {"tries": "", "guesses": "", "streak": 0, "beaten": False}
+            sample = {"tries": "", "guesses": "", "streak": 0}
             json.dump(sample, f)
         return
 
@@ -58,7 +58,7 @@ def post_toDB(pid: Union[str, int], gs):
         d = json.load(g)
     with open(pth, "w") as g:
         d["guesses"] = d["guesses"] + gs
-        d["tries"] = d["tries"] + gss(gs)
+        d["tries"] = d["tries"] + gss(gs, wrdl=wordle)
         json.dump(d, g)
 
 
@@ -66,17 +66,3 @@ def fetch_profile(pid: str):
     pth = f"./users/{pid}.json"
     with open(pth, "r") as g:
         return dict(json.load(g))
-
-
-"""
-guess = "pears"
-prf_exists("765765765761")
-softclear_prf("765765765761")
-post_tries("765765765761", gss(guess))
-post_guess("765765765761", guess)
-with open("./users/765765765761.json", "r", encoding="utf-8") as f:
-    g: dict = json.load(f)
-print(g["tries"][0:5])
-print(len(g["tries"]), int(len(g["tries"]) / 5))
-print(gss("cramp"))
-"""

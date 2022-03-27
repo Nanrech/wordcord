@@ -1,22 +1,17 @@
-import random
+from wordle import wordle, WORDS
 import interactions
-from tests import prf_exists, softclear_prf, post_toDB, gss, fetch_profile
+from tests import prf_exists, softclear_prf, post_toDB, fetch_profile, gss
 
 # Wordle!
-SCOPES = ['749015533310967828']  # Temp
 with open('../resources/token') as f:
     TOKEN = f.read()
 bot = interactions.Client(token=TOKEN)
-with open('../resources/wordles.txt') as kk:  # Temp
-    w = kk.read()
-    WORDS = w.split("\n")
 valid_chr = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
              'v', 'w', 'x', 'y', 'z']  # Temp
-wordle = WORDS[random.randint(0, len(WORDS))]  # Temp
 player_current: list = []  # Temp
 player_guesses: list = []  # Temp
 today = '1'  # Temp
-SCOPES = "749015533310967828"
+SCOPES = [749015533310967828]
 
 
 def err(inp, chars, valids):
@@ -33,6 +28,8 @@ def err(inp, chars, valids):
 
 
 def wnc(inp):
+    if inp is None:
+        return False
     for a in inp:
         if a == '🟩':
             continue
@@ -47,7 +44,7 @@ async def on_ready():
 
 
 @bot.command(name='dbug', description='Sends a test command', scope=SCOPES)
-async def emb(ctx: interactions.CommandContext):
+async def _emb(ctx: interactions.CommandContext):
     await ctx.send(embeds=interactions.Embed(title="**Wordle!**",
                                              description=f"Today's current word is ||`{wordle}`||!",
                                              color=0x56AB91))
@@ -55,10 +52,12 @@ async def emb(ctx: interactions.CommandContext):
 
 @bot.command(name='admin-clear', description='Removes a player\'s profile', scope=SCOPES, options=[
     interactions.Option(name="user", description="User", type=interactions.OptionType.USER, required=True)])
-async def _soft_clear(ctx: interactions.CommandContext, user):
-    softclear_prf(user)
-    F = await bot.http.get_user(user_id=user)
-    await ctx.send(f"Cleared user: {dict(F)['username']}#{dict(F)['discriminator']}")
+async def _soft_clear(ctx: interactions.CommandContext, user: interactions.Member):
+    try:
+        softclear_prf(str(user.id))
+        return await ctx.send(f"Cleared user: {user.user.username}#{user.user.discriminator}")
+    except FileNotFoundError:
+        return await ctx.send(f"{user.user.username}#{user.user.discriminator} doesn't have a profile")
 
 
 @bot.command(name='guess', description='Submit a wordle guess', scope=SCOPES, options=[interactions.Option(
@@ -67,10 +66,20 @@ async def submit(ctx: interactions.CommandContext, guess):
     U = ctx.author.user.id
     if not err(inp=guess, chars=valid_chr, valids=WORDS):
         return await ctx.send("Guess was incorrectly formatted")
-    if int(len(dict(fetch_profile(U))["tries"]) / 5) == 6:
+    if int(len(dict(fetch_profile(U))["guesses"]) / 5) == 6:
         return await ctx.send("Max. number of tries reached")
-    prf_exists(str(U))
+    if wnc(dict(fetch_profile(U))["tries"][-5:]) and dict(fetch_profile(U))["tries"] != "":
+        return await ctx.send("⭐ - You already won today, no need to guess again! - ⭐")
+    prf_exists(U)
     post_toDB(pid=ctx.author.user.id, gs=guess)
+    total = int(len(dict(fetch_profile(U))["guesses"]) / 5)
+    tries = str(dict(fetch_profile(U))["tries"])
+    msg = interactions.Embed(
+        title="Wordle",
+        color=0x6aaa64,
+        fields=[interactions.EmbedField(name="Tries", value='\n'.join([tries[x:x+5] for x in range(0, len(tries), 5)]))])
+
+    await ctx.send(embeds=msg)
 
 
 bot.start()
