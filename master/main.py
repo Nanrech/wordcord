@@ -1,6 +1,6 @@
 import random
 import interactions
-from tests import prf_exists, softclear_prf, post_guess, post_tries, gss
+from tests import prf_exists, softclear_prf, post_toDB, gss, fetch_profile
 
 # Wordle!
 SCOPES = ['749015533310967828']  # Temp
@@ -16,6 +16,7 @@ wordle = WORDS[random.randint(0, len(WORDS))]  # Temp
 player_current: list = []  # Temp
 player_guesses: list = []  # Temp
 today = '1'  # Temp
+SCOPES = "749015533310967828"
 
 
 def err(inp, chars, valids):
@@ -47,7 +48,6 @@ async def on_ready():
 
 @bot.command(name='dbug', description='Sends a test command', scope=SCOPES)
 async def emb(ctx: interactions.CommandContext):
-    await ctx.send(str(ctx.json))
     await ctx.send(embeds=interactions.Embed(title="**Wordle!**",
                                              description=f"Today's current word is ||`{wordle}`||!",
                                              color=0x56AB91))
@@ -64,11 +64,13 @@ async def _soft_clear(ctx: interactions.CommandContext, user):
 @bot.command(name='guess', description='Submit a wordle guess', scope=SCOPES, options=[interactions.Option(
     name='guess', description='A string containing your guess', type=interactions.OptionType.STRING, required=True)])
 async def submit(ctx: interactions.CommandContext, guess):
+    U = ctx.author.user.id
     if not err(inp=guess, chars=valid_chr, valids=WORDS):
         return await ctx.send("Guess was incorrectly formatted")
-    prf_exists(str(ctx.author.user.id))
-    post_tries(str(ctx.author.user.id), gss(guess))
-    post_guess(str(ctx.author.user.id), guess)
+    if int(len(dict(fetch_profile(U))["tries"]) / 5) == 6:
+        return await ctx.send("Max. number of tries reached")
+    prf_exists(str(U))
+    post_toDB(pid=ctx.author.user.id, gs=guess)
 
 
 bot.start()

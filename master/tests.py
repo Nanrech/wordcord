@@ -1,4 +1,5 @@
 import json, os
+from typing import Union
 from os.path import exists
 
 wordle = 'craft'
@@ -50,34 +51,24 @@ def softclear_prf(pid: str):
     return
 
 
-def post_tries(pid: str, tri: str):
+def post_toDB(pid: Union[str, int], gs):
     pth = f"./users/{pid}.json"
     prf_exists(pid)
     with open(pth, "r") as g:
         d = json.load(g)
     with open(pth, "w") as g:
-        d["tries"] = d["tries"] + tri
+        d["guesses"] = d["guesses"] + gs
+        d["tries"] = d["tries"] + gss(gs)
         json.dump(d, g)
-    return
 
 
-def post_guess(pid: str, gus: str):
-    pth = f"./users/{pid}.json"
-    prf_exists(pid)
-    with open(pth, "r") as g:
-        d = json.load(g)
-    with open(pth, "w") as g:
-        d["guesses"] = d["guesses"] + gus
-        json.dump(d, g)
-    return
-
-
-def get_tries(pid: str):
+def fetch_profile(pid: str):
     pth = f"./users/{pid}.json"
     with open(pth, "r") as g:
-        return str(dict(json.load(g))["tries"])
+        return dict(json.load(g))
 
 
+"""
 guess = "pears"
 prf_exists("765765765761")
 softclear_prf("765765765761")
@@ -88,3 +79,4 @@ with open("./users/765765765761.json", "r", encoding="utf-8") as f:
 print(g["tries"][0:5])
 print(len(g["tries"]), int(len(g["tries"]) / 5))
 print(gss("cramp"))
+"""
