@@ -1,7 +1,7 @@
 from pathlib import Path
 from os import path
 PATH = Path(path.dirname(path.realpath(__file__)))
-with open(Path(PATH, "token")) as f:
+with open(Path(PATH, "text/token")) as f:
     TOKEN = f.read()
 today = 0
 SCOPES = [749015533310967828]
