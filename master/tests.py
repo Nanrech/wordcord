@@ -10,18 +10,18 @@ def gss(gues, wrdl):
     load = []
     for x in gues.lower():
         if x == wrdl[n]:
-            load.append('🟩')
+            load.append("🟩")
             n += 1
             continue
         elif x in wrdl and x != wrdl[n]:
-            load.append('🟨')
+            load.append("🟨")
             n += 1
             continue
         else:
-            load.append('⬛')
+            load.append("⬛")
             n += 1
             continue
-    return ''.join(load)
+    return "".join(load)
 
 
 def prf_exists(user: str):
