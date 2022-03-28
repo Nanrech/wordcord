@@ -1,4 +1,4 @@
-from wordle import wordle, WORDS
+from wordle import wordle, WORDS, VALIDS
 import interactions
 from tests import prf_exists, softclear_prf, post_toDB, fetch_profile, gss
 
@@ -15,14 +15,17 @@ SCOPES = [749015533310967828]
 
 
 def err(inp, chars, valids):
-    if len(inp) != 5:
+    if not isinstance(inp, str):
+        return False
+    tta: str = inp.lower()
+    if len(tta) != 5:
         return False  # , error
     for ch in inp:
         if ch not in chars:
             return False  # , error
         else:
             continue
-    if inp not in valids:
+    if tta not in valids:
         return False
     return True  # , None
 
@@ -64,7 +67,7 @@ async def _soft_clear(ctx: interactions.CommandContext, user: interactions.Membe
     name="guess", description="A string containing your guess", type=interactions.OptionType.STRING, required=True)])
 async def submit(ctx: interactions.CommandContext, guess):
     U = ctx.author.user.id
-    if not err(inp=guess, chars=valid_chr, valids=WORDS):
+    if not err(inp=guess.lower(), chars=valid_chr, valids=VALIDS):
         return await ctx.send("Guess was incorrectly formatted")
     if int(len(dict(fetch_profile(U))["guesses"]) / 5) == 6:
         return await ctx.send("Max. number of tries reached")
@@ -72,12 +75,23 @@ async def submit(ctx: interactions.CommandContext, guess):
         return await ctx.send("⭐ - You already won today, no need to guess again! - ⭐")
     prf_exists(U)
     post_toDB(pid=ctx.author.user.id, gs=guess)
-    total = int(len(dict(fetch_profile(U))["guesses"]) / 5)
     tries = str(dict(fetch_profile(U))["tries"])
+    guesses = str(dict(fetch_profile(U))["guesses"]).upper()
+    a = [tries[x:x + 5] for x in range(0, len(tries), 5)]
+    b = [guesses[x:x + 5] for x in range(0, len(guesses), 5)]
+    fields = "\n".join(' '.join(x) for x in zip(a, b))
+    if wnc(dict(fetch_profile(U))["tries"][-5:]):
+        emji = "<:A_s:958125488642088980> "
+        clr = 0x6aaa64
+    else:
+        emji = "<:A_p:958127218142347356> "
+        clr = 0xffde59
     msg = interactions.Embed(
-        title="Wordle",
-        color=0x6aaa64,
-        fields=[interactions.EmbedField(name="Tries", value="\n".join([tries[x:x+5] for x in range(0, len(tries), 5)]))])
+        title=f"{emji} Wordle",
+        color=clr,
+        fields=[interactions.EmbedField(name="Attempts:", value=fields)],
+        ephemeral=True)
+    # (name="Tries:\n", value="\n".join([tries[x:x+5] for x in range(0, len(tries), 5)]))]) for JUST the squares
 
     await ctx.send(embeds=msg)
 
