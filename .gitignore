@@ -114,9 +114,9 @@ dmypy.json
 .pyre/
 master/DataB.py
 master/l.py
-resources/token
-/resources/types/
-/resources/types/
+master/resources/token
+/master/resources/resources/types/
+/master/resources/resources/types/
 /master/users/
 master/users/452954731162238987.json
 *.json
