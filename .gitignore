@@ -119,3 +119,4 @@ resources/token
 /resources/types/
 /master/users/
 master/users/452954731162238987.json
+*.json
