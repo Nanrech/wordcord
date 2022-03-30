@@ -1,5 +1,6 @@
-from pathlib import Path
 from os import path
+from pathlib import Path
+
 PATH = Path(path.dirname(path.realpath(__file__)))
 with open(Path(PATH, "text/token")) as f:
     TOKEN = f.read()

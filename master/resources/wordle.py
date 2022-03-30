@@ -1,5 +1,6 @@
-from random import randint
 from pathlib import Path
+from random import randint
+
 from wordcord.master.resources.consts import PATH
 
 with open(Path(PATH, "text/wordles.txt")) as kk:

@@ -3,6 +3,7 @@ from json import load as j_load
 from os import stat
 from os.path import exists
 from typing import Union
+
 from wordcord.master.resources.wordle import wordle
 
 
