@@ -1,7 +1,7 @@
 import interactions
 
-from wordcord.master.resources.consts import TOKEN, valid_chr, SCOPES, YELLOW_A, GREEN_A
-from wordcord.master.resources.funcs import prf_exists, softclear_prf, post_toDB, fetch_profile, err, wnc
+from wordcord.master.resources.consts import TOKEN, valid_chr, SCOPES, YELLOW_A, GREEN_A, today
+from wordcord.master.resources.funcs import prf_exists, softclear_prf, post_toDB, fetch_profile, err, wnc, gss
 from wordcord.master.resources.wordle import wordle, VALIDS
 
 # Wordle!
@@ -47,16 +47,18 @@ async def submit(ctx: interactions.CommandContext, guess):
     a = [tries[x:x + 5] for x in range(0, len(tries), 5)]
     b = [guesses[x:x + 5] for x in range(0, len(guesses), 5)]
     fields = "\n".join(' '.join(x) for x in zip(a, b))
-    if wnc(dict(fetch_profile(U))["tries"][-5:]):
+    if wnc(gss(guess, wordle)):
         emji = GREEN_A
         clr = 0x6aaa64
+        win_msg = f"Wordcord {today} \n"
     else:
         emji = YELLOW_A
         clr = 0xffde59
+        win_msg = ""
     msg = interactions.Embed(
         title=f"{emji} Wordle",
         color=clr,
-        fields=[interactions.EmbedField(name="Attempts:", value=fields)])
+        fields=[interactions.EmbedField(name=f"Wordcord {today} {len(a)}/6\n", value=win_msg + fields)])
     # (name="Tries:\n", value="\n".join([tries[x:x+5] for x in range(0, len(tries), 5)]))]) for JUST the squares
 
     await ctx.send(embeds=msg, ephemeral=True)
@@ -90,11 +92,8 @@ async def _status(ctx: interactions.CommandContext, show: str = None):
     msg = interactions.Embed(
         title=f"{emji} Wordle",
         color=clr,
-        fields=[interactions.EmbedField(name="Attempts:", value=fields)])
-    if show == "ye":
-        await ctx.send(embeds=msg, ephemeral=False)
-    else:
-        await ctx.send(embeds=msg, ephemeral=True)
+        fields=[interactions.EmbedField(name=f"Wordcord {today} {len(a)}/6\n", value=fields)])
+    await ctx.send(embeds=msg, ephemeral=not (show == "ye"))
 
 
 bot.start()
