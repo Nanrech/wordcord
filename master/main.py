@@ -1,11 +1,15 @@
 import interactions
+import os
 
-from wordcord.master.resources.consts import TOKEN, valid_chr, SCOPES, YELLOW_A, GREEN_A, today
-from wordcord.master.resources.funcs import prf_exists, softclear_prf, post_toDB, fetch_profile, err, wnc, gss
+from pathlib import Path
+from os import path
+from wordcord.master.resources.consts import TOKEN, valid_chr, SCOPES, GRAY_S, today
+from wordcord.master.resources.funcs import prf_exists, post_toDB, fetch_profile, err, wnc
 from wordcord.master.resources.wordle import wordle, VALIDS
 
 # Wordle!
 bot = interactions.Client(token=TOKEN)
+_PATH = Path(path.dirname(path.realpath(__file__)))
 
 
 @bot.event
@@ -13,33 +17,30 @@ async def on_ready():
     print("Online!")
 
 
-@bot.command(name="dbug", description="Sends a test command", scope=SCOPES)
-async def _emb(ctx: interactions.CommandContext):
-    await ctx.send(embeds=interactions.Embed(title="**Wordle!**",
-                                             description=f"Today's current word is ||`{wordle}`||!",
-                                             color=0x6aaa64))
-
-
-@bot.command(name="admin-clear", description="Removes a player's profile", scope=SCOPES, options=[
-    interactions.Option(name="user", description="User", type=interactions.OptionType.USER, required=True)])
-async def _soft_clear(ctx: interactions.CommandContext, user: interactions.Member):
-    try:
-        softclear_prf(str(user.id))
-        return await ctx.send(f"Cleared user: {user.user.username}#{user.user.discriminator}")
-    except FileNotFoundError:
-        return await ctx.send(f"{user.user.username}#{user.user.discriminator} doesn't have a profile")
-
-
-@bot.command(name="guess", description="Submit a wordle guess", scope=SCOPES, options=[interactions.Option(
-    name="guess", description="A string containing your guess", type=interactions.OptionType.STRING, required=True)])
+@bot.command(name="try", description="Submit a guess for today's Wordle", scope=SCOPES, options=[interactions.Option(
+    name="guess", description="A string containing your choice", type=interactions.OptionType.STRING, required=True)])
 async def submit(ctx: interactions.CommandContext, guess):
     U = ctx.author.user.id
     if not err(inp=guess.lower(), chars=valid_chr, valids=VALIDS):
-        return await ctx.send("Guess was incorrectly formatted")
+        return await ctx.send(ephemeral=True, embeds=interactions.Embed(
+            title="Guess was incorrectly formatted",
+            description="A guess can only be 5 letters long and must only contain characters from a to Z",
+            color=0x5865F2
+        ))
     if int(len(dict(fetch_profile(U))["guesses"]) / 5) == 6:
-        return await ctx.send("Max. number of tries reached")
+        return await ctx.send(ephemeral=True, embeds=interactions.Embed(
+            title=f"Max. number of tries reached",
+            color=0x5865F2,
+            description="Run `/current` to see all your guesses"
+        ))
     if wnc(dict(fetch_profile(U))["tries"][-5:]) and dict(fetch_profile(U))["tries"] != "":
-        return await ctx.send("⭐ - You already won today, no need to guess again! - ⭐")
+        return await ctx.send(ephemeral=True,
+                              embeds=interactions.Embed(
+                                  title=f"You already beat today's Wordle! :star:",
+                                  color=0x5865F2,
+                                  description="If you want to, you can run `/current` \nto get your last recorded "
+                                              "Wordcord session"
+                              ))
     prf_exists(U)
     post_toDB(pid=ctx.author.user.id, gs=guess)
     tries = str(dict(fetch_profile(U))["tries"])
@@ -47,24 +48,20 @@ async def submit(ctx: interactions.CommandContext, guess):
     a = [tries[x:x + 5] for x in range(0, len(tries), 5)]
     b = [guesses[x:x + 5] for x in range(0, len(guesses), 5)]
     fields = "\n".join(' '.join(x) for x in zip(a, b))
-    if wnc(gss(guess, wordle)):
-        emji = GREEN_A
-        clr = 0x6aaa64
-        win_msg = f"Wordcord {today} \n"
-    else:
-        emji = YELLOW_A
-        clr = 0xffde59
-        win_msg = ""
+    clr = 0x6aaa64 if wnc(dict(fetch_profile(U))["tries"][-5:]) else 0xffde59
+    final = "​" if len(a) != 6 else f"Oops! The correct answer was ||{wordle.upper()}||!"
     msg = interactions.Embed(
-        title=f"{emji} Wordle",
+        title=f"Wordle {today} {len(b)}/6",
         color=clr,
-        fields=[interactions.EmbedField(name=f"Wordcord {today} {len(a)}/6\n", value=win_msg + fields)])
+        fields=[interactions.EmbedField(name=final, value=fields.replace("⬛", GRAY_S))])
+    # The name parameter has a zero width character because I couldn't pass in an empty string
+    # Shitty solution, but it looks alright. Same applies to /current
     # (name="Tries:\n", value="\n".join([tries[x:x+5] for x in range(0, len(tries), 5)]))]) for JUST the squares
 
     await ctx.send(embeds=msg, ephemeral=True)
 
 
-@bot.command(name="current", description="Shows your current game's status. Can be public or private",
+@bot.command(name="current", description="Shows your current status. You can choose whether it's public or private",
              scope=SCOPES,
              options=[interactions.Option(name="show",
                                           description="Whether to show this to the public or not",
@@ -83,17 +80,21 @@ async def _status(ctx: interactions.CommandContext, show: str = None):
     a = [tries[x:x + 5] for x in range(0, len(tries), 5)]
     b = [guesses[x:x + 5] for x in range(0, len(guesses), 5)]
     fields = "\n".join(' '.join(x) for x in zip(a, b))
-    if wnc(dict(fetch_profile(U))["tries"][-5:]):
-        emji = "<:A_s:958125488642088980> "
-        clr = 0x6aaa64
-    else:
-        emji = "<:A_p:958127218142347356> "
-        clr = 0xffde59
+    clr = 0x6aaa64 if wnc(dict(fetch_profile(U))["tries"][-5:]) else 0xffde59
+    final = "​" if len(a) != 6 else f"Oops! The correct answer was ||{wordle.upper()}||!"
     msg = interactions.Embed(
-        title=f"{emji} Wordle",
+        title=f"Wordle {today} {len(b)}/6",
         color=clr,
-        fields=[interactions.EmbedField(name=f"Wordcord {today} {len(a)}/6\n", value=fields)])
+        fields=[interactions.EmbedField(name=final, value=fields.replace("⬛", GRAY_S))])
     await ctx.send(embeds=msg, ephemeral=not (show == "ye"))
+
+cogs = [
+    module[:-3]
+    for module in os.listdir(f"{Path(_PATH, 'cogs')}")
+    if module[-3:] == ".py"
+]
+for cog in cogs:
+    bot.load("cogs." + cog)
 
 
 bot.start()
