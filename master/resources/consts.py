@@ -1,13 +1,25 @@
 from os import path
+from json import load
 from pathlib import Path
-
 PATH = Path(path.dirname(path.realpath(__file__)))
-with open(Path(PATH, "txt/token")) as f:
+
+with open(Path(PATH, "txt/token"), "r") as f:
     TOKEN = f.read()
-today = 183
-SCOPES = [749015533310967828]
-GREEN_A = "<:A_s:958125488642088980> "
-YELLOW_A = "<:A_p:958127218142347356> "
-valid_chr = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u",
-             "v", "w", "x", "y", "z"]
-GRAY_S = "<:e_gray:960123211654234133>"
+
+
+with open(Path(PATH, "txt/wordles.txt")) as kk:
+    w = kk.read()
+    VALIDS = w.split("\n")
+
+
+with open(Path(PATH, "txt/wordle-allowed-guesses.txt")) as kk:
+    w = kk.read()
+    WORDS = w.split("\n")
+
+
+with open(Path(PATH, "config.json"), "r") as S:
+    __LOADED: dict = load(S)
+valid_chr: list = __LOADED["valids"]
+SCOPES: list = __LOADED["scopes"]
+GRAY_S: str = __LOADED["gray"]
+today: int = __LOADED["today"]
